@@ -1,51 +1,48 @@
 package com.example.piggybank;
 
+import android.app.Application;
+import android.content.SharedPreferences;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.MutableLiveData;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import androidx.preference.PreferenceManager;
+import androidx.appcompat.app.AppCompatDelegate;
+import android.util.Log;
+
 import java.util.List;
 
-public class PiggyBankViewModel extends ViewModel {
-    private MutableLiveData<List<Expense>> expenses;
-    private MutableLiveData<Map<String, Double>> budget;
-    private MutableLiveData<List<String>> reminders;
+public class PiggyBankViewModel extends AndroidViewModel {
 
-    public PiggyBankViewModel() {
-        expenses = new MutableLiveData<>(new ArrayList<>());
-        budget = new MutableLiveData<>(new HashMap<>());
-        reminders = new MutableLiveData<>(new ArrayList<>());
+    private final PiggyBankRepository repository;
+    private final LiveData<List<Expense>> allExpenses;
+
+    public PiggyBankViewModel(@NonNull Application application) {
+        super(application);
+        repository = new PiggyBankRepository(application);
+        allExpenses = repository.getAllExpenses();
+
     }
 
+    // Getter metode za LiveData objekti
     public LiveData<List<Expense>> getExpenses() {
-        return expenses;
+        return allExpenses;
     }
 
-    public LiveData<Map<String, Double>> getBudget() {
-        return budget;
-    }
-
-    public LiveData<List<String>> getReminders() {
-        return reminders;
-    }
-
+    // Metode za umetanje i ažuriranje podataka
     public void addExpense(Expense expense) {
-        List<Expense> currentExpenses = expenses.getValue();
-        currentExpenses.add(expense);
-        expenses.setValue(currentExpenses);
+        repository.insertExpense(expense);
     }
 
-    public void setBudget(String category, double amount) {
-        Map<String, Double> currentBudget = budget.getValue();
-        currentBudget.put(category, amount);
-        budget.setValue(currentBudget);
+    public void clearAllExpenses() {
+        repository.deleteAllExpenses();
     }
 
-    public void addReminder(String reminder) {
-        List<String> currentReminders = reminders.getValue();
-        currentReminders.add(reminder);
-        reminders.setValue(currentReminders);
+    public void addReminder(Reminder reminder) {
+        repository.insertReminder(reminder);
     }
+
+    public void setBudget(Budget budget) {
+        repository.insertOrUpdateBudget(budget);
+    }
+
 }
